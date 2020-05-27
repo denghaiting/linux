@@ -37,6 +37,7 @@ int main(void)
 		/* 关闭LED0 */
 		led_switch(LED0,OFF);	
 		delay(500);
+		delay(1000);
 	}
 
 	return 0;
