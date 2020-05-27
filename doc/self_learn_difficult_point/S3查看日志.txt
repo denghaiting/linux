@@ -1,0 +1,22 @@
+
+
+Login incorrect
+MacBee S3 login: root
+Password: 
+
+
+BusyBox v1.12.1 (2017-08-11 11:25:51 CST) built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+# rfgw_di_d
+-sh: rfgw_di_d: not found
+# rfgw_cli -g 255
+# 
+# rfgw_cli -G 4
+# 
+# tail -f var/log/kernel.log 
+2017-11-08 10:16:32:710 WARN   - [MacBee_TxData:624] - TX: (2)64 6B 
+2017-11-08 10:16:32:909 WARN   - [MacBee_TxData:624] - TX: (1)EC 
+2017-11-08 10:16:32:910 WARN   - [MacBee_TxData:624] - TX: (2)32 6C 
+2017-11-08 10:16:32:910 WARN   - [MacBee_TxData:624] - TX: (2)64 6C 
+2017-11-08 10:16:33:109 WARN   - [MacBe

@@ -1,0 +1,5 @@
+µÇÂ¼10.134.0.71  SSH2
+ls
+cd esp8266
+ls
+./build.sh

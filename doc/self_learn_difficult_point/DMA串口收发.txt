@@ -1,0 +1,68 @@
+void DMA_usart2_init(void)
+{
+	rcc_periph_clock_enable(RCC_DMA);
+	/*******************DMA发送初始化***********************/
+	dma_set_number_of_data(DMA1, DMA_CHANNEL4, 512);
+	dma_set_peripheral_size(DMA1, DMA_CHANNEL4,DMA_CCR_PSIZE_8BIT);
+	dma_set_memory_size(DMA1, DMA_CHANNEL4,DMA_CCR_MSIZE_8BIT);
+	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL4);
+	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL4);
+	DMA_CCR(DMA1, DMA_CHANNEL4) &= ~DMA_CCR_CIRC;//不循环
+	DMA_CCR(DMA1, DMA_CHANNEL4) &= ~DMA_CCR_MEM2MEM;//非存储器到存储器
+
+	dma_set_memory_address(DMA1, DMA_CHANNEL4, (uint32_t)tx_buf);
+	dma_set_read_from_memory(DMA1, DMA_CHANNEL4);
+	dma_set_priority(DMA1, DMA_CHANNEL4, DMA_CCR_PL_HIGH);
+	dma_set_peripheral_address(DMA1, DMA_CHANNEL4, USART2_TDR_Address);
+	dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL4);
+	usart_enable_tx_dma(USART2);
+	dma_enable_channel(DMA1, DMA_CHANNEL4);
+	/*******************end***********************/
+
+	/********************DMA接收初始化*******************/
+	dma_set_number_of_data(DMA1, DMA_CHANNEL5, 512);
+	dma_set_peripheral_size(DMA1, DMA_CHANNEL5,DMA_CCR_PSIZE_8BIT);
+	dma_set_memory_size(DMA1, DMA_CHANNEL5,DMA_CCR_MSIZE_8BIT);
+	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
+	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL5);
+	DMA_CCR(DMA1, DMA_CHANNEL5) &= ~DMA_CCR_CIRC;//不循环
+	DMA_CCR(DMA1, DMA_CHANNEL5) &= ~DMA_CCR_MEM2MEM;//非存储器到存储器
+	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)rx2_buf);
+	dma_set_read_from_peripheral(DMA1, DMA_CHANNEL5);
+	dma_set_priority(DMA1, DMA_CHANNEL5, DMA_CCR_PL_HIGH);
+	dma_set_peripheral_address(DMA1, DMA_CHANNEL5, USART2_RDR_Address);
+	//dma_enable_transfer_complete_interrupt(DMA1, DMA_CHANNEL5);
+	usart_enable_rx_dma(USART2);
+	dma_enable_channel(DMA1, DMA_CHANNEL5);
+	
+}
+
+/*******************DMA发送***********************/
+void DMA_data_send(uint16_t len)
+{
+	while(DMA_CNDTR(DMA1, DMA_CHANNEL4));
+	dma_disable_channel(DMA1, DMA_CHANNEL4);
+	dma_set_number_of_data(DMA1, DMA_CHANNEL4, len);
+	dma_enable_channel(DMA1, DMA_CHANNEL4);
+}
+
+/*******************DMA接收***********************/
+void USART2_IRQHandler(void)
+{
+	uint16_t data = 0;
+	/* Check if we were called because of RXNE. */
+	if (((USART_CR1(USART2) & USART_CR1_RE) != 0) &&
+	    ((USART_ISR(USART2) & USART_ISR_RXNE) != 0)) {
+		/* Indicate that we got data. */
+
+		/* Retrieve the data from the peripheral. */ 
+		nvic_disable_irq(NVIC_USART2_IRQ);
+		dma_disable_channel(DMA1, DMA_CHANNEL5);
+		rx2_len = 512-DMA_CNDTR(DMA1, DMA_CHANNEL5);
+		DMA_CNDTR(DMA1, DMA_CHANNEL5)= 512;
+		dma_enable_channel(DMA1, DMA_CHANNEL5);
+		nvic_enable_irq(NVIC_USART2_IRQ);
+		/*清空接收完成中断标志*/
+		USART_ISR(USART2) |= USART_ISR_RXNE;
+	}
+}
